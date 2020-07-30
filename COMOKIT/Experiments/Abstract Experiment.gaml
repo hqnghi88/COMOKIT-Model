@@ -93,7 +93,7 @@ experiment "Abstract Experiment" virtual: true {
 	//				 MAIN DEFAULT DISPLAY					 //
 	// ----------------------------------------------------- //
 	output {
-		display "default_display" synchronized: false type: opengl background: background virtual: true draw_env: false {
+		display "default_display" synchronized: false type: java2D background: background virtual: true draw_env: false {
 			overlay position: {5, 5} size: {700 #px, 200 #px} transparency: 1 {
 				draw world.name font: default at: {20 #px, 20 #px} anchor: #top_left color: text_color;
 				draw ("Day " + int((current_date - starting_date) / #day)) + " | " + ("Cases " + world.number_of_infectious) font: default at: {20 #px, 50 #px} anchor: #top_left color:
@@ -106,7 +106,7 @@ experiment "Abstract Experiment" virtual: true {
 			}
 
 			agents "Individual" value: all_individuals where not (each.is_outside) {
-				draw square(state = susceptible or clinical_status = recovered ? 10 : 20) color: state = latent ? #yellow : (self.is_infectious ? #orangered : (clinical_status = recovered ?
+				draw square(state = susceptible or clinical_status = recovered ? 10000 : 20000) color: state = latent ? #yellow : (self.is_infectious ? #orangered : (clinical_status = recovered ?
 				#blue : #green));
 			}
 
@@ -138,7 +138,7 @@ experiment "Abstract Experiment" virtual: true {
 			}
 
 			agents "Individual" value: all_individuals where not (each.is_outside) {
-				draw square(self.is_infectious ? 30 : 10) color: state = latent ? #yellow : (self.is_infectious ? #orangered : (clinical_status = recovered ? #blue : #green));
+				draw square(self.is_infectious ? 3000 : 1000) color: state = latent ? #yellow : (self.is_infectious ? #orangered : (clinical_status = recovered ? #blue : #green));
 			}
 
 		}

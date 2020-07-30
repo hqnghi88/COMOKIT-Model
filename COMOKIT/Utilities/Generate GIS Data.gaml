@@ -25,7 +25,7 @@ global {
 	string dataset_path <- "../Datasets/Test Generate GIS Data";	
 	
 	//mandatory: define the bounds of the studied area
-	file data_file <-shape_file(dataset_path + "/boundary.shp");
+	file data_file <-shape_file(dataset_path + "/VNM.19.4_1.shp");
 	
 	//if true, GAMA is going to use OSM data to create the building file
 	bool use_OSM_data <- true;
