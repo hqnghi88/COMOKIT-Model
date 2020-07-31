@@ -44,7 +44,7 @@ global {
 	
 	//simulation step
 	float step<-1#h;
-	date starting_date <- date([2020,3,2]);
+	date starting_date <- date([2020,7,1]);
 	
 	int num_infected_init <- 2; //number of infected individuals at the initialization of the simulation
 	int num_recovered_init <- 0; //The number of people that have already been infected in the past
