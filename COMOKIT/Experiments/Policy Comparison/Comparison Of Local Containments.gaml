@@ -98,7 +98,7 @@ experiment "Comparison Local" parent: "Abstract Experiment" autorun: true {
 				AbstractPolicy lock <- create_lockdown_policy()	;
 				
 				create DynamicSpatialPolicy returns: spaceP {
-					radius <- 20#m;
+					radius <- 1000#m;
 					target <- first(lock);
 				}			
 							

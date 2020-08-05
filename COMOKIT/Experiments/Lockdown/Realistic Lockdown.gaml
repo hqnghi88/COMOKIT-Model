@@ -35,6 +35,7 @@ experiment "Realistic Lockdown" parent: "Abstract Experiment" autorun: true {
 	}
 
 	action _init_ {
+		string shape_path <- self.ask_dataset_path();
 		map<string, unknown> input <- ask_values();
 		
 		float tolerance <- float(input["Proportion (between 0 and 1) of essential workers allowed to go out"]);
@@ -43,7 +44,7 @@ experiment "Realistic Lockdown" parent: "Abstract Experiment" autorun: true {
 		/*
 		 * Initialize the no containment policy.
 		 */		
-		create simulation {
+		create simulation  with: [dataset_path::shape_path, num_infected_init::10]{
 			name <- "No containment policy";
 			ask Authority {
 				policy <- create_no_containment_policy();
@@ -54,7 +55,7 @@ experiment "Realistic Lockdown" parent: "Abstract Experiment" autorun: true {
 		/*
 		 * Initialize the "realistic" lockdown policy with a given tolerance and a number of hourly tests.
 		 */
-		create simulation {
+		create simulation  with: [dataset_path::shape_path, num_infected_init::10]{
 			name <- "Realistic lockdown with " + int(tolerance * 100) + "% of essential workers and " + nb_tests_ + " daily tests";
 			allow_transmission_building <- true;
 			ask Authority {

@@ -25,7 +25,12 @@ global {
 
 	// Monitor the number of infectious individual
 	int number_of_infectious <- 0 update: length(all_individuals where (each.is_infectious));
-
+	matrix data1;
+	matrix data2;
+	Individual Patient1;
+	Individual Patient2;
+	int cnt1 <- 0;
+	int cnt2 <- 0;
 	/*
 	 * Gloabl three steps initialization of a any simulation
 	 */
@@ -35,23 +40,79 @@ global {
 		do global_init;
 		do create_authority;
 		do after_init;
+		file patient_csv_file1 <- csv_file("../Datasets/Sample/0904687610_filter.csv", true);
+		file patient_csv_file2 <- csv_file("../Datasets/Sample/0964395113_filter.csv", true);
+		data1 <- (patient_csv_file1.contents);
+		data2 <- (patient_csv_file2.contents);
+	}
+
+	reflex ss {
+	//		if (cnt1 > data1.rows - 1) {
+	//			cnt1 <- 0;
+	//		}
+		if (cnt1 < data1.rows) {
+			point p1 <- to_GAMA_CRS({float(data1[2, cnt1]), float(data1[1, cnt1])}, "4326").location;
+			if (Patient1 = nil) {
+			//			Patient1 <- first(all_individuals closest_to p1);
+				Patient1 <- first(all_individuals where (not (each.is_outside) and each.state = latent));
+				write Patient1;
+			}
+
+			Patient1.location <- p1;
+			ask Patient1 {
+				list<Individual> nei <- (all_individuals at_distance 200 #m); //closest_to Patient1;
+				ask nei {
+					if (flip(0.01)) {
+						do define_new_case;
+					}
+
+				}
+
+			}
+
+			cnt1 <- cnt1 + 1;
+		}
+
+		//		if (cnt2 > data2.rows - 1) {
+		//			cnt2 <- 0;
+		//		}
+		if (cnt2 < data2.rows) {
+			point p2 <- to_GAMA_CRS({float(data2[2, cnt2]), float(data2[1, cnt2])}, "4326").location;
+			if (Patient2 = nil) {
+			//			Patient2 <- first(all_individuals closest_to p2);
+				Patient2 <- last(all_individuals where (not (each.is_outside) and each.state = latent));
+				write Patient2;
+			}
+
+			Patient2.location <- p2;
+			ask Patient2 {
+				list<Individual> nei <- (all_individuals at_distance 200 #m); //closest_to Patient2;
+				ask nei {
+					if (flip(0.01)) {
+						do define_new_case;
+					}
+
+				}
+
+			}
+
+			cnt2 <- cnt2 + 1;
+		}
+
 	}
 
 }
-
 
 experiment "Abstract Experiment" virtual: true {
 
 // ----------------------------------------------------- //
 //				 DATASET PATH MANAGEMENT				 //
 // ----------------------------------------------------- //
-
-
-	string with_path_termination(string p) {
-		return last(p) = "/" ? p : p+"/";
+	string with_path_termination (string p) {
+		return last(p) = "/" ? p : p + "/";
 	}
 
-/*
+	/*
 	 * build the data set folder from provided case_study and dataset_folder </br>
 	 * Default value are dataset_folder = "Datasets" and case_study = "Vinh Phuc"
 	 */
@@ -63,6 +124,7 @@ experiment "Abstract Experiment" virtual: true {
 		} else if not (folder_exists(dfp + csfd)) {
 			error "Case study folder  does not exist : " + dfp + case_study_folder_name;
 		}
+
 		return dfp + csfd;
 	}
 
@@ -74,6 +136,7 @@ experiment "Abstract Experiment" virtual: true {
 		if not (folder_exists(dfp)) {
 			error "Datasets folder does not exist : " + dfp;
 		}
+
 		list<string> dirs <- folder(dfp).contents;
 		dirs <- dirs where folder_exists(dfp + each);
 		return dirs;
@@ -86,29 +149,34 @@ experiment "Abstract Experiment" virtual: true {
 		string dfp <- with_path_termination(_datasets_folder_path);
 		list<string> dirs <- gather_dataset_names(dfp) - EXCLUDED_CASE_STUDY_FOLDERS_NAME;
 		string question <- "Choose one dataset among : " + dirs;
-		return dfp + "/" + user_input(question, [choose("Your choice", string, first(dirs), dirs)])["Your choice"] + "/";
+		//		return dfp + "/" + user_input(question, [choose("Your choice", string, first(dirs), dirs)])["Your choice"] + "/";
+		return dfp + "/Sample/";
 	}
 
 	// ----------------------------------------------------- //
 	//				 MAIN DEFAULT DISPLAY					 //
 	// ----------------------------------------------------- //
 	output {
-		display "default_display" synchronized: false type: java2D background: background virtual: true draw_env: false {
+		display "default_display" synchronized: false type: opengl background: background virtual: true draw_env: false {
 			overlay position: {5, 5} size: {700 #px, 200 #px} transparency: 1 {
 				draw world.name font: default at: {20 #px, 20 #px} anchor: #top_left color: text_color;
-				draw ("Day " + current_date) + " | " + ("Cases " + world.number_of_infectious) font: default at: {20 #px, 50 #px} anchor: #top_left color:
-				text_color;
+				draw ("Day " + current_date) + " | " + ("Cases " + world.number_of_infectious) font: default at: {20 #px, 50 #px} anchor: #top_left color: text_color;
 			}
 
 			image file: file_exists(dataset_path + "/satellite.png") ? (dataset_path + "/satellite.png") : "../Utilities/white.png" transparency: 0.5 refresh: false;
 			species Building {
-				draw shape color: viral_load > 0 ? rgb(255 * viral_load, 0, 0) : #lightgrey empty: true width: 2;
+				draw shape color: viral_load > 0 ? rgb(255 * viral_load, 0, 0) : #grey empty: true;
 			}
-
-			agents "Individual" value: all_individuals where not (each.is_outside) {
-				draw square(state = susceptible or clinical_status = recovered ? 10 : 20) color: state = latent ? #yellow : (self.is_infectious ? #orangered : (clinical_status = recovered ?
+			//			species Individual;
+			agents "Individual" value: all_individuals where (not (each.is_outside)) {
+				draw square(state = susceptible or clinical_status = recovered ? 100 : 200) color: state = latent ? #yellow : (self.is_infectious ? #orangered : (clinical_status = recovered ?
 				#blue : #green));
 			}
+
+			//			agents "Individual" value: all_individuals where (not (each.is_outside) and (each.state != susceptible)) {
+			//				draw square(state = susceptible or clinical_status = recovered ? 10 : 20) color: state = latent ? #yellow : (self.is_infectious ? #orangered : (clinical_status = recovered ?
+			//				#blue : #green));
+			//			}
 
 		}
 
@@ -143,9 +211,9 @@ experiment "Abstract Experiment" virtual: true {
 
 		}
 
-		display "states_evolution_chart" virtual: true refresh: every(24#cycle) {
+		display "states_evolution_chart" virtual: true refresh: every(24 #cycle) {
 			chart "Population epidemiological states evolution" background: #white axes: #black color: #black title_font: default legend_font: font("Helvetica", 14, #bold) {
-				data "Susceptible" value: length(all_individuals where (each.state = susceptible)) color: #green marker: false style: line;
+			//				data "Susceptible" value: length(all_individuals where (each.state = susceptible)) color: #green marker: false style: line;
 				data "Latent" value: length(all_individuals where (each.is_latent())) color: #orange marker: false style: line;
 				data "Infectious" value: length(all_individuals where (each.is_infectious)) color: #red marker: false style: line;
 				data "Recovered" value: length(all_individuals where (each.clinical_status = recovered)) color: #blue marker: false style: line;
@@ -160,56 +228,67 @@ experiment "Abstract Experiment" virtual: true {
 			}
 
 		}
-		
+
 		// DEMOGRAPHICS
-		
 		display "demographics_age" virtual: true {
 			chart "Ages" type: histogram {
-				loop i from: 0 to: max_age { data ""+i value: all_individuals count(each.age = i); }
+				loop i from: 0 to: max_age {
+					data "" + i value: all_individuals count (each.age = i);
+				}
+
 			}
+
 		}
-		
+
 		display "demographics_sex" virtual: true {
 			chart "sex" type: pie {
-				data "Male" value: all_individuals count (each.sex=0);
-				data "Female" value: all_individuals count (each.sex=1);
+				data "Male" value: all_individuals count (each.sex = 0);
+				data "Female" value: all_individuals count (each.sex = 1);
 			}
+
 		}
-		
+
 		display "demographics_employed" virtual: true {
 			chart "unemployed" type: pie {
-				data "Employed" value: all_individuals count not(each.is_unemployed);
+				data "Employed" value: all_individuals count not (each.is_unemployed);
 				data "Unemployed" value: all_individuals count each.is_unemployed;
 			}
+
 		}
-		
+
 		display "demographics_household_size" virtual: true {
-			chart "Household size" type:histogram {
-				loop i from: 0 to:max(all_individuals collect (length(each.relatives))) { 
-					data string(i) value: all_individuals count (length(each.relatives)=i);
+			chart "Household size" type: histogram {
+				loop i from: 0 to: max(all_individuals collect (length(each.relatives))) {
+					data string(i) value: all_individuals count (length(each.relatives) = i);
 				}
+
 			}
-		}	 
+
+		}
 
 	}
-	
+
 	permanent {
-		
-		display "infected_cases" toolbar: false background: #black virtual: true refresh: every(24#cycle){
+		display "infected_cases" toolbar: false background: #black virtual: true refresh: every(24 #cycle) {
 			chart "Infected cases" background: #black axes: #white color: #white title_font: default legend_font: font("Helvetica", 14, #bold) {
 				loop s over: simulations {
-					data s.name value: s.number_of_infectious color: s.color marker: false style: line thickness: 2; 		
+					data s.name value: s.number_of_infectious color: s.color marker: false style: line thickness: 2;
 				}
+
 			}
+
 		}
-		
-		display "cumulative_incidence" toolbar: false background: #black virtual: true refresh: every(24#cycle){
+
+		display "cumulative_incidence" toolbar: false background: #black virtual: true refresh: every(24 #cycle) {
 			chart "Cumulative incidence" background: #black axes: #white color: #white title_font: default legend_font: font("Helvetica", 14, #bold) {
 				loop s over: simulations {
-					data s.name value: s.total_number_of_infected color: s.color marker: false style: line thickness: 2; 
+					data s.name value: s.total_number_of_infected color: s.color marker: false style: line thickness: 2;
 				}
+
 			}
-		}		
-	}	
+
+		}
+
+	}
 
 }

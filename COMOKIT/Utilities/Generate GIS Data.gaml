@@ -22,10 +22,10 @@ global {
 	 * ------------------------------------------------------------------
 	 */
 	//define the path to the dataset folder
-	string dataset_path <- "../Datasets/Test Generate GIS Data";	
+	string dataset_path <- "../Datasets/Test Generate GIS Data/VNM.27_1";	
 	
 	//mandatory: define the bounds of the studied area
-	file data_file <-shape_file(dataset_path + "/VNM.19.2_1/VNM.19.2.13_1.shp");
+	file data_file <-shape_file(dataset_path + ".shp");
 	
 	//if true, GAMA is going to use OSM data to create the building file
 	bool use_OSM_data <- true;
@@ -163,7 +163,7 @@ global {
 		}
 	
 		//save the building using the pseudo mercator crs with the type, flats, heights and levels attributes
-		save Building crs:"EPSG:3857" to:dataset_path +"/buildings.shp" type: shp attributes: ["type"::type, "flats"::flats,"height"::height, "levels"::levels];
+		save Building crs:"EPSG:3857" to:dataset_path +"buildings.shp" type: shp attributes: ["type"::type, "flats"::flats,"height"::height, "levels"::levels];
 		
 		
 		//for type of building, assign a random color
@@ -393,7 +393,7 @@ global {
 			color <-rgb( (static_map_request) at {grid_x,1500 - (grid_y + 1) }) ;
 		}
 		//save the image retrieved
-		save cell to: dataset_path +"/satellite.png" type: image;
+		save cell to: dataset_path +"satellite.png" type: image;
 		
 		//add meta-data to georeferenced the image
 		string rest_link2<- "https://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial/?mapArea="+bottom_right.y+"," + top_left.x + ","+ top_left.y + "," + bottom_right.x + "&mmd=1&mapSize="+size_x+","+size_y+ "&key=AvZ5t7w-HChgI2LOFoy_UF4cf77ypi2ctGYxCgWOLGFwMGIGrsiDpCDCjliUliln" ;
@@ -418,7 +418,7 @@ global {
 		string info <- ""  + width +"\n0.0\n0.0\n"+height+"\n"+min(pt1.x,pt2.x)+"\n"+(height < 0 ? max(pt1.y,pt2.y) : min(pt1.y,pt2.y));
 	
 		//save the metadat
-		save info to: dataset_path +"/satellite.pgw";
+		save info to: dataset_path +"satellite.pgw";
 		
 		write "Satellite image saved with the right meta-data";
 		gama.pref_gis_auto_crs <- bool(experiment get "pref_gis" );
@@ -564,7 +564,7 @@ global {
 		} else {
 			//at the end, save the building
 			if (not empty(data_google)) {
-				save Building crs:"EPSG:3857" to:dataset_path +"/buildings.shp" type: shp attributes: ["type"::type, "flats"::flats,"height"::height, "levels"::levels];
+				save Building crs:"EPSG:3857" to:dataset_path +"buildings.shp" type: shp attributes: ["type"::type, "flats"::flats,"height"::height, "levels"::levels];
 			}
 			do pause;
 		}
@@ -651,7 +651,7 @@ experiment generateGISdata type: gui autorun: true {
 	output {
 		display map type: opengl draw_env: false background: #black{
 			image (file_exists(googlemap_path) ? (googlemap_path): "white.png") transparency: 0.2;
-			image (file_exists(dataset_path+"/satellite.png") ? (dataset_path+"/satellite.png"): "white.png")  transparency: 0.2;
+			image (file_exists(dataset_path+"satellite.png") ? (dataset_path+"satellite.png"): "white.png")  transparency: 0.2;
 			
 			graphics "tile" {
 				if bounds_tile != nil {

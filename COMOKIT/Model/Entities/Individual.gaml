@@ -46,7 +46,7 @@ species Individual parent: BiologicalEntity schedules: shuffle(Individual where 
 	bool is_unemployed; 
 	//COMOKIT identifier
 	string individual_id;
-	
+	geometry shape<-square(100#m);
 	//Bool to consider only once the death
 	bool is_counted_dead <- false;
 	//Bool to consider only once the hospitalisation
