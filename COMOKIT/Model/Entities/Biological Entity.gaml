@@ -271,6 +271,7 @@ species BiologicalEntity control:fsm{
 		
 		
 		transition to: removed when: (tick>=infectious_period){
+			location<-{-1000,-1000};
 			if(clinical_status=no_need_hospitalisation){
 				clinical_status <- recovered;
 			}else{

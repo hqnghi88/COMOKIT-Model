@@ -27,6 +27,15 @@ global {
 }
 
 species Building {
+	string NAME_1;
+	string NAME_2;
+	string NAME_3;
+	string GID_1;
+	string GID_2;
+	string GID_3;
+	string VARNAME_1;
+	string VARNAME_2;
+	string VARNAME_3;
 	//Viral load of the building
 	float viral_load <- 0.0;
 	//Type of the building

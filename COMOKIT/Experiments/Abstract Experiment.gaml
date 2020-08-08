@@ -40,66 +40,12 @@ global {
 		do global_init;
 		do create_authority;
 		do after_init;
-		file patient_csv_file1 <- csv_file("../Datasets/Sample/0904687610_filter.csv", true);
-		file patient_csv_file2 <- csv_file("../Datasets/Sample/0964395113_filter.csv", true);
+		file patient_csv_file1 <- csv_file(dataset_path+"/0904687610_filter.csv", true);
+		file patient_csv_file2 <- csv_file(dataset_path+"/0964395113_filter.csv", true);
 		data1 <- (patient_csv_file1.contents);
 		data2 <- (patient_csv_file2.contents);
 	}
 
-	reflex ss {
-	//		if (cnt1 > data1.rows - 1) {
-	//			cnt1 <- 0;
-	//		}
-		if (cnt1 < data1.rows) {
-			point p1 <- to_GAMA_CRS({float(data1[2, cnt1]), float(data1[1, cnt1])}, "4326").location;
-			if (Patient1 = nil) {
-			//			Patient1 <- first(all_individuals closest_to p1);
-				Patient1 <- first(all_individuals where (not (each.is_outside) and each.state = latent));
-				write Patient1;
-			}
-
-			Patient1.location <- p1;
-			ask Patient1 {
-				list<Individual> nei <- (all_individuals at_distance 200 #m); //closest_to Patient1;
-				ask nei {
-					if (flip(0.01)) {
-						do define_new_case;
-					}
-
-				}
-
-			}
-
-			cnt1 <- cnt1 + 1;
-		}
-
-		//		if (cnt2 > data2.rows - 1) {
-		//			cnt2 <- 0;
-		//		}
-		if (cnt2 < data2.rows) {
-			point p2 <- to_GAMA_CRS({float(data2[2, cnt2]), float(data2[1, cnt2])}, "4326").location;
-			if (Patient2 = nil) {
-			//			Patient2 <- first(all_individuals closest_to p2);
-				Patient2 <- last(all_individuals where (not (each.is_outside) and each.state = latent));
-				write Patient2;
-			}
-
-			Patient2.location <- p2;
-			ask Patient2 {
-				list<Individual> nei <- (all_individuals at_distance 200 #m); //closest_to Patient2;
-				ask nei {
-					if (flip(0.01)) {
-						do define_new_case;
-					}
-
-				}
-
-			}
-
-			cnt2 <- cnt2 + 1;
-		}
-
-	}
 
 }
 
@@ -149,8 +95,8 @@ experiment "Abstract Experiment" virtual: true {
 		string dfp <- with_path_termination(_datasets_folder_path);
 		list<string> dirs <- gather_dataset_names(dfp) - EXCLUDED_CASE_STUDY_FOLDERS_NAME;
 		string question <- "Choose one dataset among : " + dirs;
-		//		return dfp + "/" + user_input(question, [choose("Your choice", string, first(dirs), dirs)])["Your choice"] + "/";
-		return dfp + "/Sample/";
+				return dfp + "/" + user_input(question, [choose("Your choice", string, first(dirs), dirs)])["Your choice"] + "/";
+//		return dfp + "/Sample/";
 	}
 
 	// ----------------------------------------------------- //

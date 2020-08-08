@@ -275,7 +275,7 @@ global {
 		list<list<Individual>> households;
 		
 		ask homes {
-			loop times: 2{//nb_households {
+			loop times: nb_households {
 				list<Individual> household;
 				if flip(proba_active_family) {
 				//father

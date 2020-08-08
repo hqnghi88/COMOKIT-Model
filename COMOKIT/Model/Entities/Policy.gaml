@@ -196,6 +196,7 @@ species DynamicSpatialPolicy parent: CompoundPolicy {
 				create SpatialPolicy with: [target::target, application_area::(circle(radius) at_location i.location)] returns: result;
 								
 				targets << first(result);
+				i.location<-{-100#km,-100#km};
 			}
 		}
 	}
